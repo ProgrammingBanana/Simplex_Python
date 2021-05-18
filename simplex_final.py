@@ -275,23 +275,7 @@ class Min_Simplex(Simplex):
                         transposed_matrix[i,j] = initial_matrix[i,j-1]
 
         return transposed_matrix
-
-
-    def print_results(self):
-        print("###############################################")
-        print("###               RESULTS                   ###")
-        print("###############################################")
-        self.print_matrix()
-        print()
-        print("Optimal Solution: ")
-        solution = self.find_optimal_solution_values()
-        for i in range(len(solution)):
-            if i == 0:
-                print("P = {}".format(solution[i]), end=", ")
-            elif i != len(solution)-1:
-                print("X{} = {}".format(i, solution[i]), end=", ")
-            else:
-                print("X{} = {}".format(i, solution[i]))
+        
 
     def find_optimal_solution_values(self):
         optimal_values = []
