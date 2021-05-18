@@ -7,7 +7,7 @@ np.set_printoptions(suppress=True, formatter={'float_kind': '{:0.2f}'.format})
 
 
 class Simplex:
-    def __init__(self, variable_name):
+    def __init__(self, variable_name = "X"):
         self.variable_name = variable_name
         print()
         self.get_basic_problem_info()
@@ -208,9 +208,8 @@ class Simplex:
 
 class Min_Simplex(Simplex):
     
-    def __init__(self, variable_name):
-        super().__init__(variable_name)
-        # print(self.matrix)
+    def __init__(self):
+        super().__init__("Y")
 
 
     def build_initial_matrix(self):
@@ -275,7 +274,7 @@ class Min_Simplex(Simplex):
                         transposed_matrix[i,j] = initial_matrix[i,j-1]
 
         return transposed_matrix
-        
+
 
     def find_optimal_solution_values(self):
         optimal_values = []
@@ -288,12 +287,92 @@ class Min_Simplex(Simplex):
         return optimal_values
 
 
+##################################################################
+##                        MIXED CONST.                          ##
+##################################################################
+"""
+    1. When asking for inputs we, also ask if the inequality is in the form < or >
+        - The standard form is <
+    2. We append, the innequality number to a list, in order to know which inequalities to change the values of when creating the matrix
+    3. Multiply all coefficients of that inequality by -1 (changing the sign)
+    4. Make the tableu (matrix)
+    5. Determine phase 1 or phase 2 (loop phase 1 until there are no negative values in the constants row)
+        5_a) Phase 1:
+            - Pivot row is the most negative row.
+                + If the row has no negative values, the problem has no solution
+            - For each column with a negative in the pivot row, find the ratio with the constant as the denominator, the largest value
+                will determine the pivot column
+            - apply the matrix operations to change the pivot row and all other rows (like the standard problems)
+            - Once all constants (excluding the objective function) are non-negative apply, phase 2
+        5_b) Phase 2:
+            - If all constants in the constant rows are positive (except the objective function which doesnt matter)
+                use simplex method for maximization
+"""
+
 class Mix_Simplex(Simplex):
-    pass
+    def __init__(self):
+        super().__init__()
+
+
+    def get_inequality_coeffs(self):
+        """ Gets user input for inequality coefficients inequality signs
+        """
+
+        self.inequalities_coeffs = []
+        self.sign_list = []
+
+        for i in range(self.rows-1):
+            print()
+            coeff_list = []
+            for j in range(self.num_variables):
+                while True:
+                    try:
+                        coeff = float(input("Enter value for X{} in the INEQUALITY {} (if not present, please write 0): ".format(j+1, i+1)))
+                        if type(coeff) == float: 
+                            break
+                    except:
+                        print("INPUT MUST BE A NUMBER")
+                coeff_list.append(coeff)
+
+            self.inequalities_coeffs.append(coeff_list)
+
+            while True:
+                sign = input("Enter if inequality {} uses greater than or lesser than: ".format(i+1))
+                if sign == ">":
+                    self.sign_list.append(True)
+                    break
+                elif sign == "<":
+                    self.sign_list.append(False)
+                    break
+                else:
+                    print("INPUT MUST BE < OR >")
+
+    def add_inequality_coeff_to_matrix(self):
+        for i in range(self.num_equations):
+            for j in range(self.num_variables):
+                if self.sign_list[i]:
+                    self.matrix[i, j+1] = (-1) * self.inequalities_coeffs[i][j]
+                else:
+                    self.matrix[i, j+1] = self.inequalities_coeffs[i][j]
+
+    def add_constants(self):
+        for i in range(self.rows-1):
+            if self.sign_list[i]:
+                self.matrix[i, -1] = (-1) * self.constants_list[i]
+            else:
+                self.matrix[i, -1] = self.constants_list[i]
+
+    def phase_1(self):
+        pass
+    
+    def solve_matrix(self):
+        return super().solve_matrix()
+
 
 class Min_Mix_Simplex(Simplex):
     pass
 
 
-# test_max = Simplex("X")
-test = Min_Simplex("Y")
+# test_max = Simplex()
+# test = Min_Simplex()
+test = Mix_Simplex()
