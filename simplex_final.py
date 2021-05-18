@@ -7,7 +7,8 @@ np.set_printoptions(suppress=True, formatter={'float_kind': '{:0.2f}'.format})
 
 
 class Simplex:
-    def __init__(self):
+    def __init__(self, variable_name):
+        self.variable_name = variable_name
         print()
         self.get_basic_problem_info()
         print()
@@ -162,7 +163,7 @@ class Simplex:
             if i == 0:
                 print("   P", end ="    ")
             elif i <= self.num_variables:
-                print("X{}".format(i), end ="   ")
+                print("{}{}".format(self.variable_name, i), end ="   ")
             elif i != self.cols-1:
                 print("S{}".format(i-i+1), end ="    ")
             else:
@@ -207,10 +208,9 @@ class Simplex:
 
 class Min_Simplex(Simplex):
     
-    def __init__(self):
-        super().__init__()
-        
-        print(self.matrix)
+    def __init__(self, variable_name):
+        super().__init__(variable_name)
+        # print(self.matrix)
 
 
     def build_initial_matrix(self):
@@ -278,13 +278,31 @@ class Min_Simplex(Simplex):
 
 
     def print_results(self):
-        pass
+        print("###############################################")
+        print("###               RESULTS                   ###")
+        print("###############################################")
+        self.print_matrix()
+        print()
+        print("Optimal Solution: ")
+        solution = self.find_optimal_solution_values()
+        for i in range(len(solution)):
+            if i == 0:
+                print("P = {}".format(solution[i]), end=", ")
+            elif i != len(solution)-1:
+                print("X{} = {}".format(i, solution[i]), end=", ")
+            else:
+                print("X{} = {}".format(i, solution[i]))
 
     def find_optimal_solution_values(self):
-        pass
+        optimal_values = []
+        optimal_values.append(self.matrix[-1,-1])
 
-    def print_matrix(self):
-        pass
+
+        for col in range(self.num_variables+1, self.cols-1):
+            optimal_values.append(self.matrix[-1, col])
+
+        return optimal_values
+
 
 class Mix_Simplex(Simplex):
     pass
@@ -293,5 +311,5 @@ class Min_Mix_Simplex(Simplex):
     pass
 
 
-# test_max = Simplex()
-test = Min_Simplex()
+# test_max = Simplex("X")
+test = Min_Simplex("Y")
