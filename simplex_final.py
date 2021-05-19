@@ -194,16 +194,33 @@ class Simplex:
 
 
         for col in range(1, self.num_variables+1):
-            has_sol = False
-            for row in range(self.num_equations):
-                if self.matrix[row, col] == 1:
-                    has_sol = True
-                    optimal_values.append(self.matrix[row, -1])
-                    break
-            if not has_sol:
+            row = self.is_unit(col)
+            if row != -1:
+                optimal_values.append(self.matrix[row, -1])
+            else:
                 optimal_values.append(0)
 
         return optimal_values
+
+    def is_unit(self, col):
+        """ Verifies if the column is a unit column and if it is, it returns the row
+            of the result. If it isnt it returns -1
+
+        Args:
+            col ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        one_count = 0
+        row = 0
+
+        for i in range(self.rows):
+            if self.matrix[i, col] == 1:
+                one_count += 1
+                row = i
+        
+        return row if one_count == 1 else -1
 
 
 class Min_Simplex(Simplex):
@@ -362,17 +379,75 @@ class Mix_Simplex(Simplex):
             else:
                 self.matrix[i, -1] = self.constants_list[i]
 
+    ######################## CHANGE THIS ##################################
+    def find_pivot_row_phase_1(self):
+        self.pivot_row = -1
+        minimum = 0
+
+        for i in range(self.rows-1):
+            if self.matrix[i, -1] < minimum:
+                minimum = self.matrix[i, -1]
+                self.pivot_row = i
+
+
+
+    def find_pivot_col_phase_1(self):
+        self.pivot_col = -1
+        greatest_ratio = 0.0
+
+        denominator = self.matrix[self.pivot_row, -1]
+
+        for i in range(self.cols-1):
+            
+            numerator = self.matrix[self.pivot_row, i]
+            if numerator < 0.0:
+                print(denominator)
+                ratio = numerator/denominator
+                if ratio > greatest_ratio:
+                    greatest_ratio = ratio
+                    self.pivot_col = i
+
+
+
+    """
+        You want to have an if that verifies if find_pivot_row_phase_1 returns -1
+            - this means you go to phase 2
+        You also want to have an if that verifies if find_pivot_col_phase_1 returns -1
+            - this means there is no solution
+    """
+
+
     def phase_1(self):
-        pass
-    
+        self.find_pivot_row_phase_1()
+        counter = 0
+        while (self.pivot_row != -1 and counter <= 1):
+            self.find_pivot_col_phase_1()
+
+            if self.pivot_col == -1:
+                print("THERE IS NO SOLUTION!")
+                exit()
+
+            self.matrix[self.pivot_row] = np.true_divide(self.matrix[self.pivot_row], self.matrix[self.pivot_row, self.pivot_col])+0
+
+            for i in range(self.rows):
+                if i != self.pivot_row:
+                    self.matrix[i] = self.matrix[i] - (self.matrix[i, self.pivot_col]*self.matrix[self.pivot_row])+0
+
+            self.find_pivot_row_phase_1()
+            print(self.matrix)
+            counter += 1
+
+    ###########################################################################
     def solve_matrix(self):
-        return super().solve_matrix()
+        self.phase_1()
+        super().solve_matrix()
 
 
-class Min_Mix_Simplex(Simplex):
+class Min_Mix_Simplex(Mix_Simplex):
     pass
 
 
 # test_max = Simplex()
 # test = Min_Simplex()
-test = Mix_Simplex()
+# test = Mix_Simplex()
+# test = Min_Mix_Simplex()
