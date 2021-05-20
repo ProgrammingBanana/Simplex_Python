@@ -5,6 +5,9 @@ np.set_printoptions(suppress=True, formatter={'float_kind': '{:0.2f}'.format})
 
 # np.set_printoptions(sign=' ')
 
+##################################################################
+##                      MAXIMIZE CONST.                         ##
+##################################################################
 
 class Simplex:
     def __init__(self, variable_name = "X"):
@@ -122,7 +125,7 @@ class Simplex:
         # arr = matrix[len(matrix)-1]
         minimum = 0
         min_indx = -1
-        for col in range(1, self.cols):
+        for col in range(1, self.cols-1):
             if self.matrix[-1, col] < minimum and col != self.cols-1:
                 minimum = self.matrix[-1, col]
                 min_indx = col
@@ -222,6 +225,10 @@ class Simplex:
         
         return row if one_count == 1 else -1
 
+
+##################################################################
+##                      MINIMIZE CONST.                         ##
+##################################################################
 
 class Min_Simplex(Simplex):
     
@@ -328,7 +335,7 @@ class Min_Simplex(Simplex):
 
 class Mix_Simplex(Simplex):
     def __init__(self):
-        super().__init__()
+        super().__init__("X")
 
 
     def get_inequality_coeffs(self):
@@ -379,7 +386,7 @@ class Mix_Simplex(Simplex):
             else:
                 self.matrix[i, -1] = self.constants_list[i]
 
-    ######################## CHANGE THIS ##################################
+
     def find_pivot_row_phase_1(self):
         self.pivot_row = -1
         minimum = 0
@@ -437,17 +444,77 @@ class Mix_Simplex(Simplex):
             print(self.matrix)
             counter += 1
 
-    ###########################################################################
+    
     def solve_matrix(self):
         self.phase_1()
         super().solve_matrix()
 
 
+##################################################################
+##                      MIN MIXED CONST.                        ##
+##################################################################
+
 class Min_Mix_Simplex(Mix_Simplex):
-    pass
+    def __init__(self):
+        super().__init__()
+
+    def get_equation_coeff(self):
+        self.equation_coeff = []
+        for i in range(self.num_variables):
+                while True:
+                    try:
+                        coeff = float(input("Enter value for X{} in the EQUATION (if not present, please write 0): ".format(i+1)))
+                        if type(coeff) == float:
+                            self.equation_coeff.append((-1)*coeff) 
+                            break
+                    except:
+                        print("INPUT MUST BE A NUMBER")
 
 
-# test_max = Simplex()
-# test = Min_Simplex()
-# test = Mix_Simplex()
-# test = Min_Mix_Simplex()
+    def print_results(self):
+        print("###############################################")
+        print("###               RESULTS                   ###")
+        print("###############################################")
+        self.print_matrix()
+        print()
+        print("Optimal Solution: ")
+        solution = self.find_optimal_solution_values()
+        for i in range(len(solution)):
+            if i == 0:
+                print("P = {}".format((-1)*solution[i]), end=", ")
+            elif i != len(solution)-1:
+                print("X{} = {}".format(i, solution[i]), end=", ")
+            else:
+                print("X{} = {}".format(i, solution[i]))
+
+
+def main():
+    while True:
+        print("SIMPLEX MENU:")
+        print("1. Maximization Simplex")
+        print("2. Minimization Simplex")
+        print("3. Mixed Maximization Simplex")
+        print("4. Mixed Minimization Simplex")
+        print("5. EXIT")
+        user_input = input("What simplex method do you wish to use?: ")
+        if user_input == "1":
+            simplex = Simplex()
+        if user_input == "2":
+            simplex = Min_Simplex()
+        if user_input == "3":
+            simplex = Mix_Simplex()
+        if user_input == "4":
+            simplex = Min_Mix_Simplex()
+        if user_input == "5":
+            print("Thank you for using this app")
+            break
+
+if __name__ == "__main__":
+    main()
+
+
+
+"""  
+PROGRAM TESTED WITH THIS CALCULATOR:
+https://cbom.atozmath.com/CBOM/Simplex.aspx?q=sm&q1=3%602%60MIN%60Z%60x1%2cx2%2cx3%60-2%2c4%2c-1%603%2c-6%2c4%3b2%2c-8%2c10%60%3c%3d%2c%3e%3d%6030%2c18%60%60D%60false%60true%60false%60true%60false%60false%60true&do=1#PrevPart
+"""
