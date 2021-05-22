@@ -3,7 +3,6 @@ import numpy as np
 # Asegura que el print de floats tenga dos espacios decimales
 np.set_printoptions(suppress=True, formatter={'float_kind': '{:0.2f}'.format})
 
-# np.set_printoptions(sign=' ')
 
 ##################################################################
 ##                      MAXIMIZE CONST.                         ##
