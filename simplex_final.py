@@ -7,9 +7,20 @@ np.set_printoptions(suppress=True, formatter={'float_kind': '{:0.2f}'.format})
 ##################################################################
 ##                      MAXIMIZE CONST.                         ##
 ##################################################################
+"""
+    1. Preparacion de la matriz
+    2. Fase de pivote, hasta que no haya negativos en la ultima fila o no haya solucion
+    3. Presentar los resultados
+"""
 
 class Simplex:
     def __init__(self, variable_name = "X"):
+        """ Constructor de la clase Simplex
+
+        Args:
+            variable_name (str, optional): Esto lo uso para definir como se presentara la matriz. Defaults to "X".
+        """
+
         self.variable_name = variable_name
         print()
         self.get_basic_problem_info()
@@ -27,6 +38,9 @@ class Simplex:
 
 
     def get_basic_problem_info(self):
+        """ Le pide al usuario la cantidad de variables y de desigualdades
+        """
+
         self.num_variables = int(input("Enter the amount of variables in the equation: "))
         self.num_equations = int(input("Enter the amount of innequalities: "))
 
@@ -35,6 +49,9 @@ class Simplex:
 
 
     def get_equation_coeff(self):
+        """ Le pide al usuario los coeficientes de la ecuacion
+        """
+
         self.equation_coeff = []
         for i in range(self.num_variables):
                 while True:
@@ -48,6 +65,9 @@ class Simplex:
 
 
     def get_inequality_coeffs(self):
+        """ Le pide al usuario los coeficientes de las distintas desigualdades
+        """
+
         self.inequalities_coeffs = []
         for i in range(self.rows-1):
             print()
@@ -68,6 +88,9 @@ class Simplex:
     
 
     def get_inequality_constants(self):
+        """ Le pide al usuario la constantes de las desigualdades
+        """
+
         self.constants_list = []
         for i in range(self.rows-1):
             while True:
@@ -81,6 +104,10 @@ class Simplex:
 
 
     def add_equation_coeff_to_matrix(self):
+        """ Añade los coeficientes de la ecuacion a la matriz y le asigna 1
+        a la primera columna para convertirla en columna unitaria
+        """
+
         for i in range(self.num_variables+1):
             if i == 0:
                 self.matrix[(self.rows-1), i] = 1
@@ -89,6 +116,9 @@ class Simplex:
 
 
     def add_slack_variables(self):
+        """ Añade las variables slack necesarias a la matriz
+        """
+
         slack_row = 0
         slack_col = self.num_variables+1
 
@@ -99,17 +129,27 @@ class Simplex:
     
 
     def add_constants(self):
+        """ Añade las constantes de las desigualdes a la matriz en la ultima columna
+        """
+
         for i in range(self.rows-1):
             self.matrix[i, -1] = self.constants_list[i]
 
 
     def add_inequality_coeff_to_matrix(self):
+        """ Añade los coeficientes de las desigualdades a la matriz
+        """
+
         for i in range(self.num_equations):
             for j in range(self.num_variables):
                 self.matrix[i, j+1] = self.inequalities_coeffs[i][j]
 
 
     def build_matrix(self):
+        """ Construye la matriz y la imprime
+        """
+
+        # Esta linea crea una matriz de ceros del tamaño requerido para la cantidad de variables y desigualdades
         self.matrix = np.zeros((self.rows, self.cols))
 
         self.add_equation_coeff_to_matrix()
@@ -121,7 +161,9 @@ class Simplex:
                 
 
     def find_pivot_col(self):
-        # arr = matrix[len(matrix)-1]
+        """ Encuentra la columna pivot (columna mas negativa) y devuelve el indice, si no hay columna negativa, devuelve -1
+        """
+
         minimum = 0
         min_indx = -1
         for col in range(1, self.cols-1):
@@ -132,7 +174,9 @@ class Simplex:
         self.pivot_col =  min_indx
 
     def find_pivot_row(self):
-        # possible_rows = []
+        """ Encuentra la fila pivote y devuelve el indice, si todas las constantes y coeficientes son negativos, devuelve -1
+        """
+
         minimum = np.inf
         min_indx = -1
         
@@ -148,9 +192,16 @@ class Simplex:
 
 
     def solve_matrix(self):
+        """ Hace todos los calculos necesarios para resolver la matriz
+        """
+
         self.find_pivot_col()
         while(self.pivot_col != -1):
             self.find_pivot_row()
+
+            if self.pivot_row == -1:
+                print("NO SOLUTION")
+                exit()
 
             self.matrix[self.pivot_row] = np.true_divide(self.matrix[self.pivot_row], self.matrix[self.pivot_row, self.pivot_col])
 
@@ -161,6 +212,9 @@ class Simplex:
             self.find_pivot_col()
 
     def print_matrix(self):
+        """ Imprime la matriz
+        """
+
         for i in range(self.cols):
             if i == 0:
                 print("   P", end ="    ")
@@ -175,6 +229,9 @@ class Simplex:
 
 
     def print_results(self):
+        """ Imprime la matriz resultante y los valores optimos
+        """
+
         print("###############################################")
         print("###               RESULTS                   ###")
         print("###############################################")
@@ -191,6 +248,12 @@ class Simplex:
                 print("X{} = {}".format(i, solution[i]))
 
     def find_optimal_solution_values(self):
+        """ Devuelve los valores optimos
+
+        Returns:
+            list: Lista de valores optimos
+        """
+
         optimal_values = []
         optimal_values.append(self.matrix[-1,-1])
 
@@ -205,15 +268,16 @@ class Simplex:
         return optimal_values
 
     def is_unit(self, col):
-        """ Verifies if the column is a unit column and if it is, it returns the row
-            of the result. If it isnt it returns -1
+        """ Verifica si la columna es unitaria. Si lo es, devuelve la fila del uno, si no lo es
+            devuelve -1 
 
         Args:
-            col ([type]): [description]
+            col (int): Indice de la columna
 
         Returns:
-            [type]: [description]
+            int: indice de la fila con con uno si es unitaria, o -1 si no es columna unitaria
         """
+
         one_count = 0
         row = 0
 
@@ -228,14 +292,30 @@ class Simplex:
 ##################################################################
 ##                      MINIMIZE CONST.                         ##
 ##################################################################
+"""
+    1. Preparacion de la matriz inicial
+    2. Transposicionar la matriz inicial
+    3. Escribir el sistema nuevo (generado por la transposicion de la matriz)
+    4. Aplica simplex para maximizacion
+    5. Presentar datos, los resultados para x1, x2, ..., xn, estaran en la fila de abajo en las columnas de las variables slack
+"""
 
 class Min_Simplex(Simplex):
     
     def __init__(self):
+        """ Constructor de la clase de Minimizacion Simplex
+        """
+
         super().__init__("Y")
 
 
     def build_initial_matrix(self):
+        """ Construye la matriz inicial con los datos originales del usuario
+
+        Returns:
+            np.array : Matriz con los datos originales que entro el usuario
+        """
+
         initial_matrix = np.zeros((self.num_equations+1, self.num_variables+1))
         for i in range(self.num_equations+1):
             for j in range(self.num_variables+1):
@@ -253,6 +333,10 @@ class Min_Simplex(Simplex):
         return initial_matrix
 
     def build_matrix(self):
+        """ Construye la matriz para calcular, primero genera la matriz inicial,
+            le hace transpose y luego genera la matriz final
+        """
+
         initial_matrix = self.build_initial_matrix()
         print("The Initial Matrix: ")
         print(initial_matrix)
@@ -280,6 +364,16 @@ class Min_Simplex(Simplex):
 
 
     def transfer_values(self, initial_matrix, transposed_matrix):
+        """ Transfiere los valores de la matriz inicial a la matriz final
+
+        Args:
+            initial_matrix (np.array): Matriz inicial
+            transposed_matrix (np.array): Matriz final que se va a generar
+
+        Returns:
+            np.array : Matriz final con los datos entrados por el usuario
+        """
+
         i_rows, i_cols = initial_matrix.shape
         for i in range(self.rows):
             for j in range(i_cols+1):
@@ -300,6 +394,12 @@ class Min_Simplex(Simplex):
 
 
     def find_optimal_solution_values(self):
+        """ Devuelve los valores optimos para el simplex de minimizacion 
+
+        Returns:
+            list : Valores optimos que se encontraron
+        """
+
         optimal_values = []
         optimal_values.append(self.matrix[-1,-1])
 
@@ -333,12 +433,16 @@ class Min_Simplex(Simplex):
 """
 
 class Mix_Simplex(Simplex):
+
     def __init__(self):
+        """ Constructor de la clase
+        """
+
         super().__init__("X")
 
 
     def get_inequality_coeffs(self):
-        """ Gets user input for inequality coefficients inequality signs
+        """ Recibe el input de los coeficientes de la desigualdad y su signo
         """
 
         self.inequalities_coeffs = []
@@ -371,6 +475,9 @@ class Mix_Simplex(Simplex):
                     print("INPUT MUST BE < OR >")
 
     def add_inequality_coeff_to_matrix(self):
+        """ Añade los coeficientes de las desigualdades a la matriz tomando en consideracion los signos de desigualdad
+        """
+
         for i in range(self.num_equations):
             for j in range(self.num_variables):
                 if self.sign_list[i]:
@@ -379,6 +486,8 @@ class Mix_Simplex(Simplex):
                     self.matrix[i, j+1] = self.inequalities_coeffs[i][j]
 
     def add_constants(self):
+        """ Añade las constantes de las desigualdades a la matriz tomando en consideracion los signos de desigualdad
+        """
         for i in range(self.rows-1):
             if self.sign_list[i]:
                 self.matrix[i, -1] = (-1) * self.constants_list[i]
@@ -387,6 +496,9 @@ class Mix_Simplex(Simplex):
 
 
     def find_pivot_row_phase_1(self):
+        """ Encuentra la fila pivote para la fase 1, si no hay fila negativa devuelve -1
+        """
+
         self.pivot_row = -1
         minimum = 0
 
@@ -398,6 +510,9 @@ class Mix_Simplex(Simplex):
 
 
     def find_pivot_col_phase_1(self):
+        """ Encuentra la columna pivote para la fase 1, si no hay columna negativa devuelve -1
+        """
+
         self.pivot_col = -1
         greatest_ratio = 0.0
 
@@ -407,7 +522,6 @@ class Mix_Simplex(Simplex):
             
             numerator = self.matrix[self.pivot_row, i]
             if numerator < 0.0:
-                print(denominator)
                 ratio = numerator/denominator
                 if ratio > greatest_ratio:
                     greatest_ratio = ratio
@@ -415,20 +529,22 @@ class Mix_Simplex(Simplex):
 
 
 
-    """
-        You want to have an if that verifies if find_pivot_row_phase_1 returns -1
-            - this means you go to phase 2
-        You also want to have an if that verifies if find_pivot_col_phase_1 returns -1
-            - this means there is no solution
-    """
-
-
     def phase_1(self):
+        """ Aplica los metodos anteriormente definidos para aplicar la fase 1 hasta o no haya constantes negativas
+            o no haya solucion
+        """
+
         self.find_pivot_row_phase_1()
         counter = 0
         while (self.pivot_row != -1 and counter <= 1):
             self.find_pivot_col_phase_1()
 
+            """
+                You want to have an if that verifies if find_pivot_row_phase_1 returns -1
+                    - this means you go to phase 2
+                You also want to have an if that verifies if find_pivot_col_phase_1 returns -1
+                    - this means there is no solution
+            """
             if self.pivot_col == -1:
                 print("THERE IS NO SOLUTION!")
                 exit()
@@ -445,6 +561,9 @@ class Mix_Simplex(Simplex):
 
     
     def solve_matrix(self):
+        """ Resuelve la matriz, primero resolviendo la fase 1 y luego aplicando el solve de maximizacion
+        """
+
         self.phase_1()
         super().solve_matrix()
 
@@ -454,10 +573,16 @@ class Mix_Simplex(Simplex):
 ##################################################################
 
 class Min_Mix_Simplex(Mix_Simplex):
+
     def __init__(self):
+        """ Constuctor de la clase Minimizacion mixta
+        """
         super().__init__()
 
     def get_equation_coeff(self):
+        """ Recibe los coeficientes de la ecuacion y los multiplica por -1
+        """
+
         self.equation_coeff = []
         for i in range(self.num_variables):
                 while True:
@@ -471,6 +596,9 @@ class Min_Mix_Simplex(Mix_Simplex):
 
 
     def print_results(self):
+        """ Imprime los resultados, multiplicando el valor de la P por -1
+        """
+
         print("###############################################")
         print("###               RESULTS                   ###")
         print("###############################################")
@@ -488,6 +616,9 @@ class Min_Mix_Simplex(Mix_Simplex):
 
 
 def main():
+    """ Menu para correr los metodos simplex
+    """
+    
     while True:
         print("SIMPLEX MENU:")
         print("1. Maximization Simplex")
