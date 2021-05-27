@@ -556,7 +556,6 @@ class Mix_Simplex(Simplex):
                     self.matrix[i] = self.matrix[i] - (self.matrix[i, self.pivot_col]*self.matrix[self.pivot_row])+0
 
             self.find_pivot_row_phase_1()
-            print(self.matrix)
             counter += 1
 
     
